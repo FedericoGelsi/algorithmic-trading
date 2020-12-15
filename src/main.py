@@ -8,9 +8,6 @@ import yfinance as yf
 from api.algorithms import strategies as als
 
 
-def get_stock_history(name: str, period: str):
-    return yf.Ticker(name).history(period=period)
-
 def plot( data , stockname):
     plt.style.use('fivethirtyeight')
     plt.figure(figsize=(12.5, 4.5))
@@ -37,12 +34,25 @@ def getStock_Daily(name):
 def main():
     stockname = input("Type the stock name to search: ").upper()
     period = input("Insert the period to look for ():")
-    hist = get_stock_history(stockname, period)
-    getStock_Daily(stockname)
-    if not hist.empty:
-        data = als.longterm_signal(hist, stockname)
-        plot(data, stockname)
+    ticket = als.Ticket(stockname)
+    ticket.get_stock_history(period)
+    if not ticket.hist.empty:
+        #data = als.longterm_signal(hist, stockname)
+        data = als.tma_strat(ticket)
+        plt.style.use('fivethirtyeight')
+        plt.figure(figsize=(12.5, 4.5))
+        plt.plot(data[ticket.name], label=ticket.name, alpha=0.55, linewidth=1.0)
+        plt.plot(data['Short/Fast EMA'], label='Short/Fast EMA',alpha=0.35, linewidth=1.5)
+        plt.plot(data['Middle/Medium EMA'], label='Middle/Medium EMA',alpha=0.35, linewidth=1.5)
+        plt.plot(data['Long/Slow EMA'], label='Long/Slow EMA',alpha=0.35, linewidth=1.5)
+        plt.scatter(data.index, data['Buy_Signal_Price'], label='Buy', marker='^', color='green')
+        plt.scatter(data.index, data['Sell_Signal_Price'], label='Sell', marker='v', color='red')
+        plt.xlabel('')
+        plt.ylabel('')
+        plt.legend(loc='upper left')
+        plt.show()
 
 if __name__ == '__main__':
     main()
     
+
